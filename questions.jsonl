@@ -1,0 +1,20 @@
+{"id": "q01", "type": "plain", "question": "How much is the late fee for library books?", "answer": "AED 2 per book per day"}
+{"id": "q02", "type": "plain", "question": "When are the final exams?", "answer": "weeks 15 and 16"}
+{"id": "q03", "type": "plain", "question": "How much is tuition per credit hour?", "answer": "AED 1,150 per credit hour"}
+{"id": "q04", "type": "plain", "question": "What happens if my GPA falls below 2.00?", "answer": "academic probation"}
+{"id": "q05", "type": "plain", "question": "How long can I borrow a laptop from the library?", "answer": "up to four hours"}
+{"id": "q06", "type": "other words", "question": "If I quit a class in the second week, how much money do I get back?", "answer": "50% refund"}
+{"id": "q07", "type": "other words", "question": "My father lost his job and we cannot afford my studies. Is there any help?", "answer": "Student Emergency Fund"}
+{"id": "q08", "type": "other words", "question": "My brother studies here too. Do we pay less?", "answer": "10% discount"}
+{"id": "q09", "type": "other words", "question": "How many lectures can I skip before I fail automatically?", "answer": "more than 25%"}
+{"id": "q10", "type": "other words", "question": "I had a high fever on the day of my final. What should I do?", "answer": "Form ME-1"}
+{"id": "q11", "type": "code", "question": "What does error PR-12 mean?", "answer": "paper jam"}
+{"id": "q12", "type": "code", "question": "What is form EF-9 for?", "answer": "Student Emergency Fund"}
+{"id": "q13", "type": "code", "question": "What should I do about error PX-429?", "answer": "wait 15 minutes"}
+{"id": "q14", "type": "code", "question": "What is in room A-115?", "answer": "Accessibility Office"}
+{"id": "q15", "type": "code", "question": "When does the last B2 bus leave the Corniche?", "answer": "23:30"}
+{"id": "q16", "type": "arabic", "question": "كم تكلفة بطاقة جامعية جديدة إذا فقدت بطاقتي؟", "answer": "AED 75"}
+{"id": "q17", "type": "arabic", "question": "متى يجب أن أبدأ تجديد تأشيرة الإقامة؟", "answer": "30 days before"}
+{"id": "q18", "type": "arabic", "question": "هل يمكنني أن آخذ إجازة من الدراسة لمدة فصل دراسي واحد؟", "answer": "Form LA-2"}
+{"id": "q19", "type": "arabic", "question": "كم سعر طباعة الصفحة بالأبيض والأسود؟", "answer": "AED 0.20"}
+{"id": "q20", "type": "arabic", "question": "ما هي ساعات عمل المكتبة يوم السبت؟", "answer": "10:00 to 18:00 on Saturday"}

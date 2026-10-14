@@ -1,0 +1,190 @@
+Lesson 5 · the steps and the code of the four tasks, and the code for the homework.
+Copy only the code under each "-------- code" line into your files.
+Run your files from inside rag-lab:  uv run embed.py,  uv run search.py
+
+
+======== TASK 1 · slide 6 ========
+
+What to do
+  1. Make embed.py and run it: uv run embed.py
+  2. What does (4, 384) mean?
+  3. Which two different sentences score highest (ignore the 1s)? Do they share a word?
+  4. Add “I want a refund.” in another language you know as a fifth sentence. Run again: the last
+     number in row 1 is its score.
+  5. Commit.
+Done early? Compare “The bank of the river is green.” with “The bank gave me a loan.” They share the
+  word bank. High score or low?
+Hint: Run it inside rag-lab. In step 4, put a comma after "The library opens at 8:00." HF Hub
+  warnings are harmless.
+
+-------- code: make a new file embed.py with this code --------
+
+import numpy as np
+from fastembed import TextEmbedding
+
+MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+model = TextEmbedding(MODEL, cache_dir="models")
+
+sentences = ["I want a refund.",
+             "How do I get my money back?",
+             "أريد استرداد أموالي",                  # Arabic: I want my money back
+             "The library opens at 8:00."]
+vectors = np.array(list(model.embed(sentences)))
+vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
+print(vectors.shape)                                  # (sentences, numbers)
+print(np.round(vectors @ vectors.T, 2))               # similarity of every pair
+
+
+======== TASK 2 · slide 9 ========
+
+What to do
+  1. Make search.py and run it: uv run search.py
+  2. How many questions found the right section first? In the top 5?
+  3. Which questions were missed? Find them in questions.jsonl: what kind are they?
+  4. Add print(meaning_search("What is in room A-115?")[0]) at the end. Is the result about A-115?
+     Then delete the line.
+  5. Commit.
+Done early? Ask your own question, in any language: print(meaning_search("...")[0])
+Hint: q01–05 plain · q06–10 other words · q11–15 codes · q16–20 Arabic
+
+-------- code: make a new file search.py with this code --------
+
+import numpy as np
+from lab import SECTIONS, embed, evaluate
+
+section_vectors = embed(SECTIONS)                    # 70 x 384 numbers
+
+def meaning_search(question):
+    scores = section_vectors @ embed([question])[0]  # one score per section
+    best = np.argsort(-scores)[:10]                  # 10 best, best first
+    return [SECTIONS[i] for i in best]
+
+evaluate(meaning_search)
+
+
+======== TASK 3 · slide 13 ========
+
+What to do
+  1. Add this code at the end of search.py.
+  2. Run uv run search.py and compare the three lines.
+  3. Compare the missed lists: which questions does only meaning search miss? Only word search?
+  4. Commit.
+Done early? Print word_search("PR-12")[0] and meaning_search("PR-12")[0]. Which one finds the
+  printing section? Then delete the two lines.
+Hint: word_search finds nothing for an Arabic question? Correct: the guide has no Arabic words.
+
+-------- code: add this code at the end of search.py --------
+
+import re
+from rank_bm25 import BM25Okapi
+
+def words(text):                                     # "PR-12?" -> ["pr", "12"]
+    return re.findall(r"\w+", text.lower())
+
+bm25 = BM25Okapi([words(s) for s in SECTIONS])       # word counts per section
+
+def word_search(question):
+    scores = bm25.get_scores(words(question))
+    best = np.argsort(-scores)[:10]
+    return [SECTIONS[i] for i in best if scores[i] > 0]   # a word must match
+
+def hybrid_search(question):
+    points = {}                                      # section -> points
+    for search in (meaning_search, word_search):
+        for rank, section in enumerate(search(question), 1):
+            points[section] = points.get(section, 0) + 1 / (60 + rank)
+    return sorted(points, key=points.get, reverse=True)[:10]
+
+evaluate(word_search)
+evaluate(hybrid_search)
+
+
+======== TASK 4 · slide 16 ========
+
+What to do
+  1. Add this code at the end of search.py.
+  2. Run it. Compare the “first” numbers of hybrid_search and rerank_search.
+  3. Which question is still missed? Why can't the reranker help? (See the comment # the top 10.)
+  4. Paste the printed prompt into any AI chat. Does the answer cite [1]?
+  5. Commit.
+Done early? In rerank_search, use meaning_search instead of hybrid_search. Better or worse? Then
+  change it back.
+Hint: A pause of up to a minute is normal: the reranker reads 10 sections for each of the 20
+  questions.
+
+-------- code: add this code at the end of search.py --------
+
+from fastembed.rerank.cross_encoder import TextCrossEncoder
+from lab import QUESTIONS
+
+reranker = TextCrossEncoder("BAAI/bge-reranker-v2-m3-int8", cache_dir="models")
+
+def rerank_search(question):
+    candidates = hybrid_search(question)                   # the top 10
+    scores = list(reranker.rerank(question, candidates))   # read each pair
+    best = np.argsort(scores)[::-1]                        # highest first
+    return [candidates[i] for i in best]
+
+evaluate(rerank_search)
+
+question = QUESTIONS[18]["question"]                       # q19, in Arabic
+prompt = "Answer only from these sources, and cite them like [1].\n\n"
+for i, section in enumerate(rerank_search(question)[:3], 1):
+    prompt += f"[{i}] {section}\n\n"
+prompt += "Question: " + question
+print(prompt)
+
+
+======== HOMEWORK · item 1: score your own questions (README.txt has the hint) ========
+
+-------- code: add this code at the end of search.py --------
+
+from lab import load
+mine = load("my_questions.jsonl")
+for search in (meaning_search, word_search, hybrid_search, rerank_search):
+    evaluate(search, mine)
+
+
+======== HOMEWORK · item 2 (c): 100-word pieces instead of sections ========
+
+-------- code: add this code at the end of search.py --------
+
+from lab import GUIDE
+w = GUIDE.split()
+pieces = [" ".join(w[i:i + 100]) for i in range(0, len(w), 100)]
+piece_vectors = embed(pieces)
+def pieces_search(question):
+    scores = piece_vectors @ embed([question])[0]
+    return [pieces[i] for i in np.argsort(-scores)[:10]]
+evaluate(pieces_search)
+
+
+======== HOMEWORK · optional: the guide in Qdrant, a real vector database ========
+
+First, in rag-lab:  uv add qdrant-client   (not "qdrant-client[fastembed]": it installs old versions)
+Then run it:        uv run qdrant_search.py   (the first run builds the folder qdrant_db/)
+
+-------- code: make a new file qdrant_search.py with this code --------
+
+from qdrant_client import QdrantClient, models
+
+from lab import SECTIONS, evaluate
+
+client = QdrantClient(path="qdrant_db")             # stored in a folder, no server
+MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+def doc(text):                                      # Qdrant embeds it with fastembed
+    return models.Document(text=text, model=MODEL, options={"cache_dir": "models"})
+
+if not client.collection_exists("guide"):           # build it on the first run only
+    client.create_collection("guide", vectors_config=models.VectorParams(
+        size=client.get_embedding_size(MODEL), distance=models.Distance.COSINE))
+    client.upsert("guide", [models.PointStruct(id=i, vector=doc(text), payload={"text": text})
+                            for i, text in enumerate(SECTIONS)])
+
+def qdrant_search(question):
+    hits = client.query_points("guide", query=doc(question), limit=10).points
+    return [hit.payload["text"] for hit in hits]
+
+evaluate(qdrant_search)
+client.close()

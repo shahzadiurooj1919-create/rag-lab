@@ -1,0 +1,5 @@
+﻿{"question": "What is the process to recover access to my account?", "type": "reworded", "expected_answer": "Navigate to the security settings and click password reset."}
+{"question": "How can I view my historical invoices?", "type": "reworded", "expected_answer": "Billing history is located under the payments tab."}
+{"question": "What does the ERR_404_NOT_FOUND code indicate?", "type": "code", "expected_answer": "The requested resource or endpoint does not exist on the server."}
+{"question": "How do I resolve an AUTH_TOKEN_EXPIRED error?", "type": "code", "expected_answer": "Generate a new API key in the developer console."}
+{"question": "كيف يمكنني تغيير لغة النظام؟", "type": "arabic", "expected_answer": "يمكنك تغيير لغة العرض من خلال قائمة التفضيلات في إعدادات الحساب."}
